@@ -1,5 +1,5 @@
 
-// inslude library
+// include library
 #include <SPI.h>
 #include "MyTypes.h"
 
@@ -11,16 +11,18 @@ const byte ADC_select  = 9;
 // values of the dac channels A and B
 int ADC_value_A = 0;
 int ADC_value_B = 0;
+boolean ADC_select_status = 0;
 
 // array for filter setting
-int in[]  = {  0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4095};
-int out[] = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
+const int ADC_value_input[] = {  0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4095};
+const int R_value_filter[]  = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
+const int R_value_control[] = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
 
 
 void setup()
 {
   // config serial communication
-  Serial.begin(38400);
+  Serial.begin(9600);
 
   // start the SPI library
   SPI.begin();
@@ -43,7 +45,7 @@ void setup()
   AD5144(POT_CH_ALL, POT_WRITE, 255);
   AD5144(POT_CH_ALL, POT_UPDATE, 0);
 
-  // set adc to 0
+  // set all adc to 0
   MAX523x(ADC_LOAD_AB_UPDATE_ALL, 0);
 }
 
@@ -115,7 +117,7 @@ void toggleChannel()
   }
 
   Serial.println("Toggle channel...");
-  
+
   // perform switch between the channels
   digitalWrite(ADC_select, !digitalRead(ADC_select));
 }
@@ -128,23 +130,30 @@ void toggleChannel()
 void setFilter(int thisValue)
 {
   //
-  
-  int filter_value = multiMap(thisValue, in, out, sizeof(in));
-  
-  Serial.print("Set filter to ");
-  Serial.print(filter_value);
-  Serial.print(" for new output value ");
-  Serial.println(thisValue);
 
-  AD5144(POT_CH_A, POT_WRITE, filter_value);
-  AD5144(POT_CH_A, POT_UPDATE, 0);
+  int thisValueFilter  = multiMap(thisValue, ADC_value_input, R_value_filter,  sizeof(ADC_value_input));
+  int thisValueControl = multiMap(thisValue, ADC_value_input, R_value_control, sizeof(ADC_value_input));
+
+  Serial.print("Set filter value to ");
+  Serial.print(thisValueFilter);
+  Serial.print(" and control value to ");
+  Serial.print(thisValueControl);
+  Serial.print(" for new output value ");
+  Serial.print(thisValue);
+  Serial.println("...");
+
+
+  AD5144(POT_CH_A, POT_WRITE, thisValueFilter);
+  AD5144(POT_CH_B, POT_WRITE, thisValueControl);
+  AD5144(POT_CH_ALL, POT_UPDATE, 0);
 }
 
 
 
 void test(int thisValue)
 {
-  Serial.println(multiMap(thisValue, in, out, sizeof(in)));
+  Serial.println(multiMap(thisValue, ADC_value_input, R_value_filter,  sizeof(ADC_value_input)));
+  Serial.println(multiMap(thisValue, ADC_value_input, R_value_control, sizeof(ADC_value_input)));
 }
 
 
@@ -153,7 +162,7 @@ void test(int thisValue)
 // URL: http://playground.arduino.cc/Main/MultiMap
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int multiMap(int val, int* _in, int* _out, uint8_t size)
+int multiMap(int val, const int* _in, const int* _out, uint8_t size)
 {
   // take care the value is within range
   // val = constrain(val, _in[0], _in[size-1]);

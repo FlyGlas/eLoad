@@ -51,7 +51,7 @@ void  SerialInputCmd()
 
     if (true_input == false)
     {
-      Serial.println("Wrong command!");
+      Serial.println("Invalid command!");
     }
   }
 }

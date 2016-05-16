@@ -4,7 +4,7 @@
 // OUTPUT: void
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int MAX523x(ADC_CMD thisCommand, int thisValue) {
+void MAX523x(ADC_CMD thisCommand, int thisValue) {
 
   // Change SPI MODE
   SPI.setDataMode(SPI_MODE0);

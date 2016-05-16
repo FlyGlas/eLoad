@@ -1,6 +1,7 @@
 #ifndef MyTypes_h
 #define MyTypes_h
 
+// typedef for digital potentiometer AD5144
 typedef enum _POT_CH_
 {
   POT_CH_A   = 0,
@@ -17,6 +18,7 @@ typedef enum _POT_CMD_
 } POT_CMD;
 
 
+// typedef for ADC MAX523x
 typedef enum _ADC_CMD_
 {
   ADC_LOAD_A             = 1,
