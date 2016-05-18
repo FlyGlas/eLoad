@@ -23,22 +23,22 @@ void  SerialInputCmd()
 
   if (new_serial_input == true)
   {
-    if (string_contains(serial_data, "set_value_a="))
+    if (string_contains(serial_data, "sva="))
     {
       true_input = true;
       setValueA(extract_value(serial_data));
     }
-    if (string_contains(serial_data, "set_value_b="))
+    if (string_contains(serial_data, "svb="))
     {
       true_input = true;
       setValueB(extract_value(serial_data));
     }
-    if (string_contains(serial_data, "set_next_value="))
+    if (string_contains(serial_data, "snv="))
     {
       true_input = true;
       setNextValue(extract_value(serial_data));
     }
-    if (string_contains(serial_data, "toggle_channel"))
+    if (string_contains(serial_data, "tgl"))
     {
       true_input = true;
       toggleChannel();

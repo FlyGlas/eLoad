@@ -4,19 +4,19 @@
 #include "MyTypes.h"
 
 // pins used for the hw connection
-const byte AD5144_CSn  = 7;
-const byte MAX523x_CSn = 8;
-const byte ADC_select  = 9;
+byte AD5144_CSn  = 7;
+byte MAX523x_CSn = 8;
+byte ADC_select  = 9;
 
 // values of the dac channels A and B
 int ADC_value_A = 0;
 int ADC_value_B = 0;
-boolean ADC_select_status = 0;
+boolean ADC_select_status = false;
 
 // array for filter setting
-const int ADC_value_input[] = {  0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4095};
-const int R_value_filter[]  = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
-const int R_value_control[] = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
+int ADC_value_input[] = {  0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4095};
+int R_value_filter[]  = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
+int R_value_control[] = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
 
 
 void setup()
@@ -39,6 +39,7 @@ void setup()
   digitalWrite(MAX523x_CSn, HIGH);
 
   // set pins low (high active)
+  ADC_select_status = false;
   digitalWrite(ADC_select, LOW);
 
   // set all digi pots to max. value
@@ -89,8 +90,8 @@ void setValueB(int thisValue)
 
 void setNextValue(int thisValue)
 {
-  if (digitalRead(ADC_select) == true) // with ADC_select = true channel A is active
-  { // with ADC_select = false channel B is active
+  if (ADC_select_status == true) // with ADC_select_status == true channel A is active
+  { // with ADC_select_status == false channel B is active
     setValueB(thisValue);
   }
   else
@@ -107,7 +108,7 @@ void setNextValue(int thisValue)
 void toggleChannel()
 {
   // set filter values for the switch between the channels
-  if (digitalRead(ADC_select) == true)
+  if (ADC_select_status == true)
   {
     setFilter(ADC_value_B);
   }
@@ -119,7 +120,8 @@ void toggleChannel()
   Serial.println("Toggle channel...");
 
   // perform switch between the channels
-  digitalWrite(ADC_select, !digitalRead(ADC_select));
+  ADC_select_status = !ADC_select_status;
+  digitalWrite(ADC_select, ADC_select_status);
 }
 
 
@@ -162,7 +164,7 @@ void test(int thisValue)
 // URL: http://playground.arduino.cc/Main/MultiMap
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int multiMap(int val, const int* _in, const int* _out, uint8_t size)
+int multiMap(int val, int* _in, int* _out, uint8_t size)
 {
   // take care the value is within range
   // val = constrain(val, _in[0], _in[size-1]);
