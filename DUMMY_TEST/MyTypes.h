@@ -30,3 +30,12 @@ typedef enum _ADC_CMD_
 } ADC_CMD;
 
 #endif
+
+
+// typedef RISE / FALL
+typedef enum _JUMP_DIRECTION_
+{
+  JUMP_UP   = 1,
+  JUMP_DOWN = 2
+} JUMP_DIRECTION;
+

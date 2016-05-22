@@ -14,9 +14,9 @@ int ADC_value_B = 0;
 boolean ADC_select_status = false;
 
 // array for filter setting
-int ADC_value_input[] = {  0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4095};
-int R_value_filter[]  = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
-int R_value_control[] = { 50,  80,  90, 100, 115,  120,  125,  140,  145,  150,  155,  160,  170,  180,  200,  220,  230,  240,  255,  255,  255};
+int ADC_value_input[] = {  0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4095};
+int R_value_filter[]  = { 20,  30,  40,  50,  60,  80, 100, 120, 140, 160,  180,  200,  220,  240,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255};
+int R_value_control[] = { 50,  60, 100, 120, 150, 180, 240, 250, 255, 255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255,  255};
 
 
 void setup()
@@ -110,14 +110,31 @@ void toggleChannel()
   // set filter values for the switch between the channels
   if (ADC_select_status == true)
   {
-    setFilter(ADC_value_B);
+    if (ADC_value_B > ADC_value_A)
+    {
+      setFilter(ADC_value_B, JUMP_UP);
+    }
+    else
+    {
+      // Negative step
+      setFilter(50, JUMP_DOWN);
+    }
   }
   else
   {
-    setFilter(ADC_value_A);
+    if (ADC_value_A > ADC_value_B)
+    {
+      setFilter(ADC_value_A, JUMP_UP);
+    }
+    else
+    {
+      // Negative step
+      setFilter(50, JUMP_DOWN);
+    }
   }
 
   Serial.println("Toggle channel...");
+  delay(50);
 
   // perform switch between the channels
   ADC_select_status = !ADC_select_status;
@@ -129,25 +146,41 @@ void toggleChannel()
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void setFilter(int thisValue)
+void setFilter(int thisValue, JUMP_DIRECTION thisDirection)
 {
   //
+  if (thisDirection == JUMP_UP)
+  {
+    int thisValueFilter  = multiMap(thisValue, ADC_value_input, R_value_filter,  sizeof(ADC_value_input));
+    int thisValueControl = multiMap(thisValue, ADC_value_input, R_value_control, sizeof(ADC_value_input));
 
-  int thisValueFilter  = multiMap(thisValue, ADC_value_input, R_value_filter,  sizeof(ADC_value_input));
-  int thisValueControl = multiMap(thisValue, ADC_value_input, R_value_control, sizeof(ADC_value_input));
-
-  Serial.print("Set filter value to ");
-  Serial.print(thisValueFilter);
-  Serial.print(" and control value to ");
-  Serial.print(thisValueControl);
-  Serial.print(" for new output value ");
-  Serial.print(thisValue);
-  Serial.println("...");
+    Serial.print("Set filter value to ");
+    Serial.print(thisValueFilter);
+    Serial.print(" and control value to ");
+    Serial.print(thisValueControl);
+    Serial.print(" for new output value ");
+    Serial.print(thisValue);
+    Serial.println("...");
 
 
-  AD5144(POT_CH_A, POT_WRITE, thisValueFilter);
-  AD5144(POT_CH_B, POT_WRITE, thisValueControl);
-  AD5144(POT_CH_ALL, POT_UPDATE, 0);
+    AD5144(POT_CH_A, POT_WRITE, thisValueFilter);
+    AD5144(POT_CH_B, POT_WRITE, thisValueFilter);
+    AD5144(POT_CH_C, POT_WRITE, thisValueFilter);
+    AD5144(POT_CH_D, POT_WRITE, thisValueControl);
+    AD5144(POT_CH_ALL, POT_UPDATE, 0);
+  }
+  else if (thisDirection == JUMP_DOWN)
+  {
+
+    Serial.print("Negative step, adjust filter value to ");
+    Serial.print(thisValue);
+    Serial.println("...");
+
+    AD5144(POT_CH_A, POT_WRITE, thisValue);
+    AD5144(POT_CH_B, POT_WRITE, thisValue);
+    AD5144(POT_CH_C, POT_WRITE, thisValue);
+    AD5144(POT_CH_ALL, POT_UPDATE, 0);
+  }
 }
 
 
